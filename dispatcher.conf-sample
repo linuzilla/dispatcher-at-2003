@@ -1,0 +1,289 @@
+//
+//	dispatcher.conf
+//
+//	Copyright (c) 2002, Jiann-Ching Liu
+//
+
+// print "Hello !! This is new version of dispatcher.conf\n\n";
+
+debug			= on;
+verbose			= 2;
+ansi-color		= on;
+print-level		= 9;
+output-format		= 5;
+// dispatching-algorithm	= 1;	// 1 -> 學生榜, 2 -> 學系榜
+
+use-ncu-format		= off;	// on  -> 使用中央大學的格式
+				// off -> 使用大考中心的格式
+skill-relative-weight   = on;	// on  -> 新的術科計算方式 (依學科加權)
+				// off -> 舊的術科計算方式 (依學科數)
+weighted-skill-standard = off;	// off -> 新的術科檢定計算 (不乘上學科加權)
+				// on  -> 舊的術科檢定計算 (乘上學科加權)
+
+test-last-year-data	= off;	// 現在如果想測原來的 data, 直接改成 on
+				// 就行了
+use-testing-data	= off;
+
+////////////////////////////////////////////////////////////
+// 使用者自定 command line options -u 1, -u 2 ...
+
+switch (cmdline-opt) {
+case 0:
+	// ansi-color = off;
+	break;
+case 1:
+	test-last-year-data = on;
+	break;
+case 2:
+	test-ntu-year-data = on;
+	break;
+case 3:
+	use-testing-data = on;
+	break;
+default:
+	print "\nOops!! option out of range !!\n\n";
+	exit;
+	break;
+}
+
+////////////////////////////////////////////////////////////
+// required
+
+if (test-ntu-year-data) {	// 請注意!! 不支援巢狀 if
+	// 測去年的資料
+	student-wishes-file	= "data/wish90.txt";
+	student-info-file	= "data/stdinfo90.txt";
+	student-score-file	= "data/score90.txt";
+	department-limit-file	= "data/deplim90-new.txt";
+	skill-set-file		= "data/skillset-90.txt";
+	skill-relative-weight   = off;	// 去年術科是依學科數加權
+	use-ncu-format		= on;	// 堅決使用中央格式
+	output-format		= 3;	// Default 成方便比對的格式
+	standard-file		= "data/standard-90.txt";
+
+	print "Testing 90 data\n";
+} else-if (test-last-year-data) {
+	// 91 年的資料
+	student-wishes-file		= "data-91/Volun91.txt";
+	//department-limit-file		= "data-91/deplim91.txt";
+	department-limit-file		= "data-91/deplim91-fortest.txt";
+	skill-set-file			= "data-91/skillset91.txt";
+	standard-file			= "data-91/standard91.txt";
+	student-info-file		= "data-91/basic91.txt";
+	student-basic-score-file	= "data-91/C_SCO91.TXT";
+	student-exam-score-file		= "data-91/S_SCO91.TXT";
+	wishminimal-file		= "Wishminimal.txt";
+
+	student-basic-score-additional	= "data-91/C_SCO91-2.TXT";
+	student-exam-score-additional	= "data-91/S_SCO91-2.TXT";
+	print "Testing 91 data\n";
+} else {
+	// 92 年的資料
+	use-deplim92-format		= 1;
+
+	have-department-name		= 1;
+
+	dull-elephant-first-line	= on;
+	dull-elephant-decimal-wishid	= on;
+	student-wishes-file		= "data-92/Volun92.txt";
+	department-limit-file		= "data-92/deplim-0423.txt";
+	skill-set-file			= "data-92/skillset-0423.txt";
+	standard-file			= "data-92/standard.txt";
+	student-info-file		= "data-92/basic92.txt";
+	student-basic-score-file	= "data-92/c_sco92.txt";
+	student-exam-score-file		= "data-92/s_sco92.txt";
+	student-skill-score-file	= "data-92/t_sco92.txt";
+	wishminimal-file		= "Wishminimal.txt";
+
+	// student-basic-score-additional	= "data-fix/C_SCO91-2.TXT";
+	// student-exam-score-additional	= "data-fix/S_SCO91-2.TXT";
+
+	//student-wishes-file		= "dtfmt-92/volun92.txt";
+	//// student-wishes-file	= "wang/volun92-wang-0603.txt";
+	//department-limit-file		= "dtfmt-92/deplim92.txt";
+	//skill-set-file		= "dtfmt-92/skillset92.txt";
+	//standard-file			= "dtfmt-92/standard92.txt";
+	//student-info-file		= "dtfmt-92/basic92.txt";
+	//student-basic-score-file	= "dtfmt-92/c_sco92.txt";
+	//student-exam-score-file	= "dtfmt-92/s_sco92.txt";
+	//student-skill-score-file	= "dtfmt-92/t_sco92.txt";
+	//wishminimal-file		= "Wishminimal.txt";
+}
+
+if (use-testing-data) {
+	student-wishes-file		= "test-data/volun91.txt";
+	department-limit-file		= "test-data/deplim.txt";
+	skill-set-file			= "test-data/skillset.txt";
+	standard-file			= "test-data/standard.txt";
+	student-info-file		= "test-data/basic91.txt";
+	student-basic-score-file	= "test-data/c_sco91.txt";
+	student-exam-score-file		= "test-data/s_sco91.txt";
+}
+
+checklist-file   = "recheck.txt";
+checklist-report = "check_report.txt";
+
+// if (use-ncu-format) {
+//	// 使用中央大學原先制定的成績格式檔
+//	print "Using NCU format intput file\n";
+// } else {
+//	// 使用大考中心的成績格式檔
+//	print "Using CEEC format input file\n";
+// }
+
+// 指定科目的部份:中央的學科在大考學科的相對位置
+//                 1     2     3     4     5     6     7     8     9
+// 中央的次序是: 國文、英文、數甲、數乙、歷史、地理、物理、化學、生物
+// 大考的次序是: 國文、英文、數甲、數乙、化學、物理、生物、歷史、地理
+//
+course-order-patch    = [ 1, 2, 3, 4, 8, 7, 9, 5, 6 ];
+
+
+// 不要改這些資料 ....
+
+basic-course-list = [ "國文", "英文", "數學", "社會", "自然" ];
+
+course-list = [ "國文", "英文", "數甲", "數乙", "歷史",
+		"地理", "物理", "化學", "生物" ];
+
+on-same-course-list = [ "----",
+			"總級分", "志願序",
+			"國文級分", "英文級分", "數學級分",
+			"社會級分", "自然級分",
+			"國文", "英文", "數學甲", "數學乙",
+			"歷史", "地理", "物理", "化學",
+			"生物", "術科" ];
+
+//   使用者自定輸出格式
+//  ┌──┬────────────┬──┐
+//  │變數│  代   表   資   訊     │欄寬│
+//  ├──┼────────────┼──┤
+//  │ $w │志願代號                │  4 │
+//  │ $s │學生準考證號 (志願卡的) │  8 │
+//  │ $n │學生序號 (大考中心的)   │  6 │
+//  │ $o │學生志願序              │  2 │
+//  │ $t │加權成績                │  5 │
+//  │ $T │加權成績                │  7 │
+//  │ $N │學生姓名                │ 12 │
+//  │ $qn│同分參酌分數 (n = 1-7)  │  5 │
+//  │ $rn│同分參酌分數 (n = 1-7)  │  6 │
+//  │ $gn│學測分數     (n = 1-5)  │  2 │
+//  │ $en│指定考科分數 (n = 1-9)  │  5 │
+//  │ $k │術科成績                │  5 │
+//  │ $m │術科主修成績            │  5 │
+//  │ $Qn│同分參酌項目 (n = 1-7)  │  8 │
+//  │ $u │最高使用的參酌序        │  1 │
+//  │ $K │術科組別                │  1 │
+//  │ $M │術科主修科目            │  1 │
+//  │ $I │術科副修科目            │  1 │
+//  └──┴────────────┴──┘
+
+// -o 3 format output
+// user-define-format	= "$w, $s,  $o, $t\n";
+
+// -o 2 format output (wishfinal)
+// user-define-format = "$s$w$t$o\r\n";
+
+//user-define-format =
+//		"$w, $s,  $o, $t, $q1, $q2, $q3, $q4, $q5, $q6, $q7, $N\n";
+
+// user-define-format = "$w, $s,  $o, $Q1, $Q2, $Q3, $k, $m\n";
+// user-define-format = "$w, $s,  $o, $Q1, $Q2, $Q3, $k, $m\n";
+user-define-format = "$w,$s,$o,$T,$g1,$g2,$g3,$g4,$g5,$e1,$e2,$e3,$e4,$e5,$e6,$e7,$e8,$e9,$k,$m,$K,$M,$I\n";
+
+// standard-file	= "data/standard-90.txt";
+// standard-file		= "";
+
+// 目前的 rotation algorithm 中, 仍不保證沒有 bug,
+// 不同的 rotation algorithm 可能可以處理不同的狀況,
+// 因此, 可以利用 enable 有效的 rotation algorighm 來
+// 解決部份問題 ...
+//
+// 演算法 1 是不撕殺的演算法, 不能處理已經增額錄取的學系及多個 best
+//          admirer
+// 演算法 2 基本上和演算法 1 是一模一樣的, 但演算法 1 只要當遇上多個
+//          best admirer 時, 就當做 sink 不處理, 但演算法 2 則放鬆這個
+//          檢查, 那些多的 best admirer 會自動處理, 但不十分確定會不會
+//          出錯
+// 演算法 3 只針對已經增額錄取的學系, 來找出 rotation 的可能, 但
+//          這並不囊括所有的狀況, 但這個演算法很可能是錯的 :-(
+// 演算法 4 事實上是我第一個嘗試做一個 universal 的 rotation algorithm
+//          的演算法, 這是個撕殺型的演算法. 但最後這個演算法並沒有解決
+//          所有的問題, 相反的, 這個演算法在某些狀況下是會出錯的。它極
+//          有可能產生不 stable 的 solution. 但它可以處理正常沒有增額錄
+//          取的狀況及一些演算法 1, 2, 3 所不能處理的問題
+// 演算法 5 這個演算法還沒寫, 內容是空的
+//
+// □ 必要時, 可以調整 rotation algorithm 的執行次序
+
+// enable-rotation-algorithms = [ 1, 2, 3, 5 ];
+enable-rotation-algorithms = [ 1, 2, 5 ];
+
+// 關於特種考生的身份代碼及加分方式
+// 程式中有 build-in 的值, 但這裡的設定是優先的
+// 這可以避免有新增或異動時, 程式需要修改
+
+special-student-rules {		// 注意!! 大小寫有區分!!
+	on '1' normal;		// 普通生
+	on '2' lower    10%;	// 降低錄取標準 - 退伍軍人 10%
+	on '3' lower	25%;	// 降低錄取標準 - 退伍軍人 25%
+	on '4' lower	25%;	// 降低錄取標準 - 山胞族籍 25%
+	on '5' lower	10%;	// 降低錄取標準 - 港澳生   10%
+	on 'A' increase 25%;	// 增加總分     - 退伍軍人 25%
+	on 'B' increase  8%;	// 增加總分     - 退伍軍人  8%
+	on 'C' lower	25%;	// 降低錄取標準 - 蒙藏生   25%
+	on 'D' increase 10%;	// 增加總分     - 港澳生   10%
+	on 'E' increase 20%;	// 增加總分     - 僑生     20%
+	on 'W' increase 25%;	// 增加總分     - 派外子女 25%
+	on 'X' increase 20%;	// 增加總分     - 派外子女 20%
+	on 'Y' increase 15%;	// 增加總分     - 派外子女 15%
+	on 'Z' increase 10%;	// 增加總分     - 派外子女 10%
+}
+
+////////////////////////////////////////////////////////////
+// optional
+
+output-file		= "result.txt";
+// check-file		= "result.ntu";
+check-file		= "result.txt";
+wish-minimal		= "wishminimal.txt";
+
+///////////////////////////////////////////////////////////
+// for debug
+
+// 這個東東已經不太需要了, 當時有這個 deny list 是因術科條件不足
+// 無法得到正確的分發結果, 所以只好暫時用 deny list 來排除
+//
+// deny-list-file		= "denylist.txt";
+deny-list-file			= "";
+
+// 平行演算法用的，每個 Solution Set 的學系預留空間
+department-increase-space	= 30;
+
+// 這兩個 trace 的參數最好不要用, 真的需要 trace 時在 command line
+// 參數去加就行了。目前會把這個 option 留在此, 其實只是因為系統開發
+// 時, 是先有設定檔的參數, 後有 command line 的參數, That's all
+//
+// trace-student = 22089531;
+// trace-department = 0413;
+
+// 這三個 additional 的參數是用來指向一些額外檔 ...
+// 這些額外檔的目的是為了程式的 black box testing 用的
+// 把測試的資料放在額外檔上, 以免與正常檔混淆, 同時在命
+// 令列參數中, 就可以決定要不要把這些額外檔混進來
+//
+
+// student-wishes-additional = "data-fix/newVOLUN.TXT";
+student-wishes-additional = "additional-wish.txt";
+student-score-additional  = "additional-score.txt";
+student-info-additional	  = "additional-info.txt";
+
+//////////////////////////////////////////////////////////
+// for random data generation
+//
+// 這部份已經沒什麼用處了, 因為 random data 沒有太大意義, 所以已
+// 經不打算繼續開發這部份的程式了 ...
+
+rdg-number-of-students	= 140000;	// 考生人數
+rdg-have-grade-test	= 95;		// 考生中有學測成績的百分比
+rdg-have-exam-test	= 95;		// 考生中有指定科目考試的百分比
